@@ -1,0 +1,30 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}Furnify{% endblock %}
+    </title>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>
+                {% block header %}Welcome to Furnify{% endblock %}
+            </h1>
+        </header>
+        <main class="content">
+            {% block content %}
+            <!-- Default content can go here -->
+            {% endblock %}
+        </main>
+        <footer class="footer">
+            {% block footer %}
+            <p>&copy; 2024 Furnify. All rights reserved.</p>
+            {% endblock %}
+        </footer>
+    </div>
+</body>
+</html>

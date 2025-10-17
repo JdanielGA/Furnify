@@ -1,0 +1,26 @@
+<!-- apps/templates/inventory/category_details.html -->
+{% extends 'base.html' %}
+
+{% block title %}Category Details{% endblock %}
+
+{% block content %}
+    <h2>Details of Category: {{ category.name }}</h2>
+    {% if category.description %}
+        <p>{{ category.description }}</p>
+    {% else %}
+        <p>No description available for this category.</p>
+    {% endif %}
+
+    {% if category.children.all %}
+        <h3>Subcategories:</h3>
+        <ul>
+            {% for child in category.children.all %}
+                <li><a href="{{ child.get_absolute_url }}">{{ child.name }}</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No subcategories available for this category.</p>
+    {% endif %}
+    <br>
+    <a href="{% url 'inventory:category_list' %}">Back to Category List</a>
+{% endblock %}
