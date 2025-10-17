@@ -25,6 +25,7 @@ class Category(models.Model):
         'slug',
         max_length=100,
         unique=True,
+        blank=True,
         help_text="URL-friendly identifier for SEO (must be unique)."
     )
     description: str = models.TextField(

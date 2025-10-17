@@ -5,6 +5,7 @@
 
 {% block content %}
     <h2>Categories</h2>
+    <a href="{% url 'inventory:category_add' %}">Add category</a>
     <ul>
         {% for category in categories %}
             <li>

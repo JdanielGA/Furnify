@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.db.models.deletion import ProtectedError
 
 from .models import Category
+from .forms import CategoryForm
 
 # --- Tests for Models (Business Logic) ---
 class CategoryModelTests(TestCase):
@@ -49,6 +50,74 @@ class CategoryViewTests(TestCase):
         Sets up a test category before each test method runs.
         """
         self.category = Category.objects.create(name="Home", slug="home")
+
+    def test_category_create_view_get_request(self):
+        """
+        Tests that the create view responds with HTTP 200 for GET requests.
+        """
+        # ACT: Make a GET request to the category creation URL.
+        response = self.client.get(reverse('inventory:category_add'))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200, "The view should return a 200 status.")
+        self.assertTemplateUsed(response, 'inventory/category_form.html', "The correct template should be used.")
+        # Verify that the form is in the context.
+        self.assertIn('form', response.context, "The context should contain a form.")
+        self.assertIsInstance(response.context['form'], CategoryForm, "The form should be an instance of CategoryForm.")
+
+    def test_category_create_view_post_success(self):
+        """
+        Tests that a valid POST request to the create view successfully creates a category.
+        """
+        # ARRANGE: Prepare the data for the new category.
+        form_data = {
+            'name': 'Chairs',
+            'description': 'All chairs and seating options.',
+            'parent': '',  # No parent category.
+        }
+
+        # ACT: Make a POST request to the category creation URL with the form data.
+        response = self.client.post(reverse('inventory:category_add'), data=form_data)
+
+        # ASSERT: Verify the conditions.
+        # Check that the response is a redirect (HTTP 302).
+        self.assertEqual(response.status_code, 302, "The view should redirect after successful creation.")
+        # Verify that it redirects to the category list page.
+        self.assertRedirects(response, reverse('inventory:category_list'))
+        # Verify that the category was created in the database.
+        self.assertTrue(
+            Category.objects.filter(name='Chairs').exists(),
+            "The new category should exist in the database."
+        )
+
+    def test_category_create_view_post_invalid_data(self):
+        """
+        Tests that an invalid POST request to the create view does not create a category.
+        """
+        # ARRANGE: Prepare invalid data (missing 'name' field).
+        form_data = {
+            'name': '',  # Name is required.
+            'description': 'All tables and surfaces.',
+            'parent': '',
+        }
+
+        # ACT: Make a POST request to the category creation URL with invalid data.
+        response = self.client.post(reverse('inventory:category_add'), data=form_data)
+
+        # ASSERT: Verify the conditions.
+        # Check that the response status code is 200 (form re-rendered with errors).
+        self.assertEqual(response.status_code, 200, "The view should return 200 for invalid form data.")
+        self.assertTemplateUsed(response, 'inventory/category_form.html', "The correct template should be used.")
+        # Verify that the form is in the context and contains errors.
+        self.assertIn('form', response.context, "The context should contain a form.")
+        form = response.context['form']
+        self.assertIsInstance(form, CategoryForm, "The form should be an instance of CategoryForm.")
+        self.assertTrue(form.errors, "The form should contain errors for invalid data.")
+        # Verify that no new category was created in the database.
+        self.assertFalse(
+            Category.objects.filter(description='All tables and surfaces.').exists(),
+            "No new category should have been created in the database."
+        )
 
     def test_category_list_view_success_with_data(self):
         """
