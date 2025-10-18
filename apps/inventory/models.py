@@ -103,3 +103,94 @@ class Category(models.Model):
         
         # Call the parent's original `save` method to save the object to the database.
         super().save(*args, **kwargs)
+
+class Product(models.Model):
+    """
+    Represents a product in the inventory.
+    Each product belongs to a category.
+    """
+    name: str = models.CharField(
+        'name',
+        max_length=200,
+        help_text="Name of the product."
+    )
+    slug: str = models.SlugField(
+        'slug',
+        max_length=200,
+        unique=True,
+        blank=True,
+        help_text="URL-friendly identifier for SEO (must be unique)."
+    )
+    category: Category = models.ForeignKey(
+        Category,
+        verbose_name='category',
+        on_delete=models.PROTECT,
+        related_name='products',
+        help_text="Category to which this product belongs."
+    )
+    description: str = models.TextField(
+        'description',
+        blank=True,
+        help_text="Detailed description of the product."
+    )
+    price: float = models.DecimalField(
+        'price',
+        max_digits=10,
+        decimal_places=2,
+        help_text="Price of the product."
+    )
+    photo: str = models.ImageField(
+        'photo',
+        upload_to='products/',
+        blank=True,
+        help_text="Image of the product."
+    )
+    stock: int = models.PositiveIntegerField(
+        'stock',
+        default=0,
+        help_text="Current stock level of the product."
+    )
+
+    created_at: datetime.datetime = models.DateTimeField(auto_now_add=True)
+    updated_at: datetime.datetime = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+        ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
+    
+    def get_absolute_url(self) -> str:
+        return reverse('inventory:product_details', kwargs={'slug': self.slug})
+    
+    def save(self, *args, **kwargs) -> None:
+        """
+        Overrides the save method to generate a unique and safe slug.
+        """
+        # 1. Generate a slug from the name if it does not exist.
+        if not self.slug:
+            self.slug = slugify(self.name)
+        
+        # 2. Ensure the slug is unique across the entire table.
+        #    This logic runs on both creation and update.
+        queryset = Product.objects.filter(slug=self.slug)
+        
+        # 3. If we are updating (the object already has a primary key),
+        #    we exclude the object itself from the duplicate check.
+        if self.pk:
+            queryset = queryset.exclude(pk=self.pk)
+
+        # 4. If an object with this slug still exists, it is a genuine duplicate.
+        if queryset.exists():
+            # Save the original slug to use it as a base.
+            original_slug = self.slug
+            counter = 1
+            # Enter a loop until an available slug is found.
+            while Product.objects.filter(slug=self.slug).exists():
+                self.slug = f'{original_slug}-{counter}'
+                counter += 1
+        
+        # Call the parent's original `save` method to save the object to the database.
+        super().save(*args, **kwargs)
