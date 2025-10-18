@@ -8,7 +8,7 @@
 <ul>
     {% for product in products %}
     <li>
-        <strong>{{ product.name }}</strong>
+        <strong><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></strong>
         - {{ product.category.name }}
         - ${{ product.price }}
         - {% if product.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
@@ -17,4 +17,6 @@
     <li>No products available.</li>
     {% endfor %}
 </ul>
+<br>
+<a href="{% url 'inventory:product_add' %}">Add product</a>
 {% endblock %}

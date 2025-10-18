@@ -416,3 +416,72 @@ class ProductViewTests(TestCase):
         for product in products:
             # Accessing the related category should not trigger additional queries.
             _ = product.category.name
+
+    def test_product_detail_view_success(self):
+        """
+        Tests that the product detail view works correctly.
+        """
+        # ACT: Make a request to the detail URL using the slug of our test product.
+        response = self.client.get(reverse('inventory:product_details', kwargs={'slug': self.product1.slug}))
+
+        # ASSERT:
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'inventory/product_details.html')
+        # Verify that the context contains the product we expect.
+        self.assertEqual(response.context['product'], self.product1)
+
+    def test_product_detail_view_not_found(self):
+        """
+        Tests that the product detail view returns a 404 for a non-existent product.
+        """
+        # ACT: Make a request to the detail URL with a non-existent slug.
+        response = self.client.get(reverse('inventory:product_details', kwargs={'slug': 'non-existent-slug'}))
+
+        # ASSERT:
+        self.assertEqual(response.status_code, 404, "The view should return a 404 status for non-existent products.")
+    
+    def test_product_detail_view_optimization(self):
+        """
+        Tests that the product detail view uses select_related to optimize database queries.
+        This helps prevent additional queries when accessing related category data.
+        """
+        # ACT: Make a GET request to the product detail URL.
+        with self.assertNumQueries(1):
+            response = self.client.get(reverse('inventory:product_details', kwargs={'slug': self.product2.slug}))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200)
+        product = response.context['product']
+        # Accessing the related category should not trigger additional queries.
+        _ = product.category.name
+
+    def test_product_delete_view_get_request(self):
+        """
+        Tests that the delete view responds with HTTP 200 for GET requests.
+        """
+        # ACT: Make a GET request to the product delete URL.
+        response = self.client.get(reverse('inventory:product_delete', kwargs={'pk': self.product1.pk}))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200, "The view should return a 200 status.")
+        self.assertTemplateUsed(response, 'inventory/product_confirm_delete.html', "The correct template should be used.")
+        # Verify that the product is in the context.
+        self.assertIn('product', response.context, "The context should contain the product.")
+        self.assertEqual(response.context['product'], self.product1, "The context product should be the one to be deleted.")
+
+    def test_product_delete_view_post_success(self):
+        """
+        Tests that a POST request to the delete view deletes the product.
+        """
+        # ARRANGE: Verify the product exists before deletion.
+        product_pk = self.product1.pk
+        self.assertTrue(Product.objects.filter(pk=product_pk).exists())
+
+        # ACT: Make a POST request to the product delete URL.
+        response = self.client.post(reverse('inventory:product_delete', kwargs={'pk': product_pk}))
+
+        # ASSERT: Verify the redirection after deletion.
+        self.assertEqual(response.status_code, 302, "The view should redirect after deletion.")
+        self.assertRedirects(response, reverse('inventory:product_list'))
+        # Verify that the product was deleted from the database.
+        self.assertFalse(Product.objects.filter(pk=product_pk).exists(), "The product should have been deleted from the database.")

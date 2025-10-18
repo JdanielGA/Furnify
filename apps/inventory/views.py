@@ -1,7 +1,7 @@
 # apps/inventory/views.py
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Category, Product
-from .forms import CategoryForm
+from .forms import CategoryForm, ProductForm
 from django.urls import reverse_lazy
 
 # List view for categories
@@ -45,3 +45,32 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         return Product.objects.select_related('category')
+
+# Detail view for a single product.
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'inventory/product_details.html'
+    context_object_name = 'product'
+
+    def get_queryset(self):
+        return Product.objects.select_related('category')
+    
+# Create view for adding a new product.
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'inventory/product_form.html'
+    success_url = reverse_lazy('inventory:product_list')
+
+# Update view for editing an existing product.
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'inventory/product_form.html'
+    success_url = reverse_lazy('inventory:product_list')
+
+# Delete view for removing a product.
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = 'inventory/product_confirm_delete.html'
+    success_url = reverse_lazy('inventory:product_list')

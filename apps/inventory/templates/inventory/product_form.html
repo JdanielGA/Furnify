@@ -1,0 +1,22 @@
+<!-- apps/templates/inventory/product_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}Product Form{% endblock %}
+
+{% block content %}
+<h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Product</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="form-errors">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+    {{ form.as_p }}
+    <button type="submit">{% if form.instance.pk %}Update{% else %}Create{% endif %} Product</button>
+</form>
+<br>
+{% if form.instance.pk %}<a href="{% url 'inventory:product_delete' form.instance.id %}">Delete this product</a>{% endif %}
+<br><br>
+<a href="{% url 'inventory:product_list' %}">Back to Product List</a>
+{% endblock %}
