@@ -1,0 +1,14 @@
+<!-- apps/templates/inventory/category_confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Category{% endblock %}
+
+{% block content %}
+    <h2>Confirm Deletion of Category: {{ category.name }}</h2>
+    <p>Are you sure you want to delete this category?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+        <a href="{{ category.get_absolute_url }}">Cancel</a>
+    </form>
+{% endblock %}

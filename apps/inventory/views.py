@@ -29,3 +29,9 @@ class CategoryUpdateView(UpdateView):
     form_class = CategoryForm
     template_name = 'inventory/category_form.html'
     success_url = reverse_lazy('inventory:category_list')
+
+# Delete view for removing a category
+class CategoryDeleteView(DeleteView):
+    model = Category
+    template_name = 'inventory/category_confirm_delete.html'
+    success_url = reverse_lazy('inventory:category_list')

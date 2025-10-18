@@ -229,5 +229,36 @@ class CategoryViewTests(TestCase):
         # Refresh the category from the database.
         self.category.refresh_from_db()
         # Verify that the category was not updated in the database.
-        self.assertNotEqual(self.category.description, 'This description should not be saved.', "The category description should not have been updated.")  
-       
+        self.assertNotEqual(self.category.description, 'This description should not be saved.', "The category description should not have been updated.")
+        self.assertEqual(self.category.name, 'Home', "The category name should remain unchanged.")
+
+    def test_category_delete_view_get_request(self):
+        """
+        Tests that the delete view responds with HTTP 200 for GET requests.
+        """
+        # ACT: Make a GET request to the category delete URL.
+        response = self.client.get(reverse('inventory:category_delete', kwargs={'pk': self.category.pk}))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200, "The view should return a 200 status.")
+        self.assertTemplateUsed(response, 'inventory/category_confirm_delete.html', "The correct template should be used.")
+        # Verify that the category is in the context.
+        self.assertIn('category', response.context, "The context should contain the category.")
+        self.assertEqual(response.context['category'], self.category, "The context category should be the one to be deleted.")
+
+    def test_category_delete_view_post_request(self):
+        """
+        Tests that a POST request to the delete view deletes the category.
+        """
+        # ARRANGE: Verify the category exists before deletion.
+        category_pk = self.category.pk
+        self.assertTrue(Category.objects.filter(pk=category_pk).exists())
+
+        # ACT: Make a POST request to the category delete URL.
+        response = self.client.post(reverse('inventory:category_delete', kwargs={'pk': category_pk}))
+
+        # ASSERT: Verify the redirection after deletion.
+        self.assertEqual(response.status_code, 302, "The view should redirect after deletion.")
+        self.assertRedirects(response, reverse('inventory:category_list'))
+        # Verify that the category was deleted from the database.
+        self.assertFalse(Category.objects.filter(pk=category_pk).exists(), "The category should have been deleted from the database.")
