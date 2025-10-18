@@ -10,14 +10,14 @@
 {% else %}
 <p>No image available for this product.</p>
 {% endif %}
-<p><strong>Category:</strong> {{ product.category.name }}</p>
 <p><strong>
-    {% if product.category.description %}
-        Description:</strong> {{ product.category.description }}
+    {% if product.description %}
+        Description:</strong> {{ product.description }}
     {% else %}
         No Description Available
     {% endif %}
 </p>
+<p><strong>Category:</strong> {{ product.category.name }}</p>
 <p><strong>Price:</strong> ${{ product.price }}</p>
 <p><strong>Stock:</strong> {% if product.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}</p>
 <br>
