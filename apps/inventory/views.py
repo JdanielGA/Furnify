@@ -22,3 +22,10 @@ class CategoryCreateView(CreateView):
     form_class = CategoryForm
     template_name = 'inventory/category_form.html'
     success_url = reverse_lazy('inventory:category_list')
+
+# Update view for editing an existing category
+class CategoryUpdateView(UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'inventory/category_form.html'
+    success_url = reverse_lazy('inventory:category_list')

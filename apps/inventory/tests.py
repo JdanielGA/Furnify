@@ -163,3 +163,71 @@ class CategoryViewTests(TestCase):
         self.assertTemplateUsed(response, 'inventory/category_details.html')
         # Verify that the context contains the category we expect.
         self.assertEqual(response.context['category'], self.category)
+
+    def test_category_update_view_get_request(self):
+        """
+        Tests that the update view responds with HTTP 200 for GET requests.
+        """
+        # ACT: Make a GET request to the category update URL.
+        response = self.client.get(reverse('inventory:category_edit', kwargs={'pk': self.category.pk}))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200, "The view should return a 200 status.")
+        self.assertTemplateUsed(response, 'inventory/category_form.html', "The correct template should be used.")
+        # Verify that the form is in the context.
+        self.assertIn('form', response.context, "The context should contain a form.")
+        self.assertIsInstance(response.context['form'], CategoryForm, "The form should be an instance of CategoryForm.")
+
+    def test_category_update_view_post_success(self):
+        """
+        Tests that a valid POST request to the update view successfully updates a category.
+        """
+        # ARRANGE: Prepare the updated data for the category.
+        form_data = {
+            'name': 'Updated Home',
+            'description': 'Updated description for home category.',
+            'parent': '',  # No parent category.
+        }
+
+        # ACT: Make a POST request to the category update URL with the form data.
+        response = self.client.post(reverse('inventory:category_edit', kwargs={'pk': self.category.pk}), data=form_data)
+
+        # ASSERT: Verify the conditions.
+        # Check that the response is a redirect (HTTP 302).
+        self.assertEqual(response.status_code, 302, "The view should redirect after successful update.")
+        # Verify that it redirects to the category list page.
+        self.assertRedirects(response, reverse('inventory:category_list'))
+        # Refresh the category from the database.
+        self.category.refresh_from_db()
+        # Verify that the category was updated in the database.
+        self.assertEqual(self.category.name, 'Updated Home', "The category name should have been updated.")
+        self.assertEqual(self.category.description, 'Updated description for home category.', "The category description should have been updated.")
+
+    def test_category_update_view_post_invalid_data(self):
+        """
+        Tests that an invalid POST request to the update view does not update the category.
+        """
+        # ARRANGE: Prepare invalid data (empty 'name' field).
+        form_data = {
+            'name': '',  # Name is required.
+            'description': 'This description should not be saved.',
+            'parent': '',
+        }
+
+        # ACT: Make a POST request to the category update URL with invalid data.
+        response = self.client.post(reverse('inventory:category_edit', kwargs={'pk': self.category.pk}), data=form_data)
+
+        # ASSERT: Verify the conditions.
+        # Check that the response status code is 200 (form re-rendered with errors).
+        self.assertEqual(response.status_code, 200, "The view should return 200 for invalid form data.")
+        self.assertTemplateUsed(response, 'inventory/category_form.html', "The correct template should be used.")
+        # Verify that the form is in the context and contains errors.
+        self.assertIn('form', response.context, "The context should contain a form.")
+        form = response.context['form']
+        self.assertIsInstance(form, CategoryForm, "The form should be an instance of CategoryForm.")
+        self.assertTrue(form.errors, "The form should contain errors for invalid data.")
+        # Refresh the category from the database.
+        self.category.refresh_from_db()
+        # Verify that the category was not updated in the database.
+        self.assertNotEqual(self.category.description, 'This description should not be saved.', "The category description should not have been updated.")  
+       

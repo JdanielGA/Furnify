@@ -21,6 +21,7 @@
     {% else %}
         <p>No subcategories available for this category.</p>
     {% endif %}
+    <a href="{% url 'inventory:category_edit' category.id %}">Edit Category</a>
     <br>
     <a href="{% url 'inventory:category_list' %}">Back to Category List</a>
 {% endblock %}
