@@ -6,6 +6,9 @@ from . import views
 app_name = 'inventory'
 
 urlpatterns = [
+    # Root URL
+    path('', views.InventoryHomeView.as_view(), name='inventory_home'),
+
     # Category URLs
     path('categories/add/', views.CategoryCreateView.as_view(), name='category_add'),
     path('categories/', views.CategoryListView.as_view(), name='category_list'),

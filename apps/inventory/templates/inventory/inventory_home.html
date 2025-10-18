@@ -1,0 +1,41 @@
+<!-- apps/templates/inventory/inventory_home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Inventory Control Panel{% endblock %}
+
+{% block header %}Inventory Control Panel{% endblock %}
+
+{% block content %}
+<h1>Inventory Control Panel</h1>
+<p>Welcome to the inventory management system. Here you can manage categories and products.</p>
+
+<hr>
+
+<h2>General Statistics</h2>
+<ul>
+    <li><strong>Total Categories:</strong> {{ category_count }}</li>
+    <li><strong>Total Products:</strong> {{ product_count }}</li>
+</ul>
+
+<h2>direct Links</h2>
+<ul>
+    <li><a href="{% url 'inventory:category_list' %}">Manage Categories</a></li>
+    <li><a href="{% url 'inventory:product_list' %}">Manage Products</a></li>
+</ul>
+
+<hr>
+
+<h2>Latest Products</h2>
+{% if latest_products %}
+<ul>
+    {% for product in latest_products %}
+    <li>
+        <a href="{{ product.get_absolute_url }}">{{ product.name }}</a> - {{ product.category.name }} -
+        ${{ product.price }}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No products available.</p>
+{% endif %}
+{% endblock %}

@@ -1,8 +1,19 @@
 # apps/inventory/views.py
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Category, Product
 from .forms import CategoryForm, ProductForm
 from django.urls import reverse_lazy
+
+# Home view for the inventory app
+class InventoryHomeView(TemplateView):
+    template_name = 'inventory/inventory_home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category_count'] = Category.objects.count()
+        context['product_count'] = Product.objects.count()
+        context['latest_products'] = Product.objects.order_by('-created_at')[:5]
+        return context
 
 # List view for categories
 class CategoryListView(ListView):

@@ -1,6 +1,7 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
         {% block title %}Furnify{% endblock %}
     </title>
 </head>
+
 <body>
     <div class="main-container">
         <header class="header">
@@ -15,6 +17,11 @@
                 {% block header %}Welcome to Furnify{% endblock %}
             </h1>
         </header>
+        <nav>
+            {% block nav %}
+            {% include 'partials/_navbar.html' %}
+            {% endblock %}
+        </nav>
         <main class="content">
             {% block content %}
             <!-- Default content can go here -->
@@ -27,4 +34,5 @@
         </footer>
     </div>
 </body>
+
 </html>
