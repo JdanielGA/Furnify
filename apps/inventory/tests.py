@@ -338,3 +338,81 @@ class ProductModelTests(TestCase):
             Category.objects.filter(pk=self.category.pk).exists(),
             "The category should not have been deleted since it has associated products."
         )
+
+
+class ProductViewTests(TestCase):
+    """
+    Test suite for the Product views.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Set up data once for the entire test class.
+        We create two categories and two products to have realistic test data.
+        """
+        cls.category1 = Category.objects.create(name="Tables", slug="tables")
+        cls.category2 = Category.objects.create(name="Sofas", slug="sofas")
+
+        cls.product1 = Product.objects.create(
+            name="Dining Table",
+            category=cls.category1,
+            price=499.99,
+            stock=3
+        )
+
+        cls.product2 = Product.objects.create(
+            name="Leather Sofa",
+            category=cls.category2,
+            price=899.99,
+            stock=2
+        )
+
+    def test_product_list_view_success_with_data(self):
+        """
+        Tests that the product list view responds with HTTP 200 and uses the correct template
+        when products exist.
+        """
+        # ACT: Make a GET request to the product list URL.
+        response = self.client.get(reverse('inventory:product_list'))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200, "The view should return a 200 status.")
+        self.assertTemplateUsed(response, 'inventory/product_list.html', "The correct template should be used.")
+        # Verify that the context contains the products we created.
+        self.assertIn('products', response.context, "The context should contain products.")
+        products = response.context['products']
+        self.assertEqual(len(products), 2, "There should be two products in the context.")
+        self.assertIn(self.product1, products, "Product1 should be in the context.")
+        self.assertIn(self.product2, products, "Product2 should be in the context.")
+
+    def test_product_list_view_empty_state(self):
+        """
+        Tests that the product list view behaves correctly when there are no products.
+        """
+        # ARRANGE: Delete all products to simulate an empty database.
+        Product.objects.all().delete()
+
+        # ACT: Make the request to the view.
+        response = self.client.get(reverse('inventory:product_list'))
+
+        # ASSERT:
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No products available.")
+        self.assertQuerySetEqual(response.context['products'], [], "The product queryset should be empty.")
+
+    def test_product_list_view_optimization_with_select_related(self):
+        """
+        Tests that the product list view uses select_related to optimize database queries.
+        This helps prevent the N+1 query problem when accessing related category data.
+        """
+        # ACT: Make a GET request to the product list URL.
+        with self.assertNumQueries(1):
+            response = self.client.get(reverse('inventory:product_list'))
+
+        # ASSERT: Verify the conditions.
+        self.assertEqual(response.status_code, 200)
+        products = response.context['products']
+        for product in products:
+            # Accessing the related category should not trigger additional queries.
+            _ = product.category.name

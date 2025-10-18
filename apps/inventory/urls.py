@@ -1,14 +1,18 @@
 # apps/inventory/urls.py
 from django.urls import path
-from .views import CategoryListView, CategoryDetailView, CategoryCreateView, CategoryUpdateView, CategoryDeleteView
+from . import views
 
 
 app_name = 'inventory'
 
 urlpatterns = [
-    path('categories/add/', CategoryCreateView.as_view(), name='category_add'),
-    path('categories/', CategoryListView.as_view(), name='category_list'),
-    path('categories/<slug:slug>/', CategoryDetailView.as_view(), name='category_details'),
-    path('categories/<int:pk>/edit/', CategoryUpdateView.as_view(), name='category_edit'),
-    path('categories/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
+    # Category URLs
+    path('categories/add/', views.CategoryCreateView.as_view(), name='category_add'),
+    path('categories/', views.CategoryListView.as_view(), name='category_list'),
+    path('categories/<slug:slug>/', views.CategoryDetailView.as_view(), name='category_details'),
+    path('categories/<int:pk>/edit/', views.CategoryUpdateView.as_view(), name='category_edit'),
+    path('categories/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='category_delete'),
+
+    # Product URLs
+    path('products/', views.ProductListView.as_view(), name='product_list'),
 ]

@@ -1,6 +1,6 @@
 # apps/inventory/views.py
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Category
+from .models import Category, Product
 from .forms import CategoryForm
 from django.urls import reverse_lazy
 
@@ -35,3 +35,13 @@ class CategoryDeleteView(DeleteView):
     model = Category
     template_name = 'inventory/category_confirm_delete.html'
     success_url = reverse_lazy('inventory:category_list')
+
+# # apps/inventory/views.py (Product views)
+# List view for products.
+class ProductListView(ListView):
+    model = Product
+    template_name = 'inventory/product_list.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        return Product.objects.select_related('category')

@@ -1,0 +1,20 @@
+<!-- apps/templates/inventory/product_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+<h2>Products</h2>
+<ul>
+    {% for product in products %}
+    <li>
+        <strong>{{ product.name }}</strong>
+        - {{ product.category.name }}
+        - ${{ product.price }}
+        - {% if product.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
+    </li>
+    {% empty %}
+    <li>No products available.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
